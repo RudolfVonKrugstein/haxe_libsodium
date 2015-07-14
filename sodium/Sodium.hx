@@ -19,6 +19,7 @@ extern class Sodium {
   // Secret key encryption
   static public var crypto_secretbox_NONCEBYTES : Int;
   static public var crypto_secretbox_KEYBYTES : Int;
+  static public var crypto_pwhash_scryptsalsa208sha256_SALTBYTES : Int;
   static public function crypto_secretbox_easy(message : Uint8Array, nonce : Uint8Array, key : Uint8Array, outputFormat : String = 'uint8array') : Uint8Array;
   static public function crypto_secretbox_open_easy(cipher : Uint8Array, nonce : Uint8Array, key : Uint8Array, outputFormat : String = 'uint8array') : Uint8Array;
 
