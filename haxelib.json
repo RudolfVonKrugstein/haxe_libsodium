@@ -1,3 +1,4 @@
 {
-  "name": "libsodium"
+  "name": "libsodium",
+  "classPath": "src"
 }

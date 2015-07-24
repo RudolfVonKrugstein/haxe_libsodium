@@ -1,7 +1,7 @@
 package sodium;
 
-import js.html.Uint8Array;
 import haxe.io.Bytes;
+#if js
 import js.html.Uint8Array;
 
 @:final @:native("sodium")
@@ -48,7 +48,8 @@ class SodiumWrapper {
 
   // Generic hash
   static public function  crypto_generichash(hash_length : Int, message : String, key : Bytes = null) : Bytes {
-    return Bytes.ofData(Sodium.crypto_generichash(hash_length, message, new Uint8Array(key.getData()).buffer);
+    var uKey = (key == null)?null:new Uint8Array(key.getData());
+    return Bytes.ofData(Sodium.crypto_generichash(hash_length, message, uKey).buffer);
   }
 
   // Public key encryption
@@ -85,3 +86,54 @@ class SodiumWrapper {
     return Bytes.ofData(Sodium.crypto_secretbox_open_easy(new Uint8Array(cipher.getData()), nonce, new Uint8Array(key.getData())).buffer);
   }
 }
+#end
+#if cpp
+class SodiumWrapper {
+/** Convinience wrapper functions*/
+  static public var crypto_secretbox_NONCEBYTES : Int = 0;
+  static public var crypto_secretbox_KEYBYTES : Int = 0;
+  static public var crypto_pwhash_SALTBYTES : Int = 0;
+
+// Memlimit/opslimit for passwordhash
+  static inline private var memlimit : Int = 16 * 1024 * 1024;
+  static inline private var opslimit : Int = 1024 * 512;
+  static public function crypto_pwhash(password :String, salt : Bytes, keyLength : Int) : Bytes {
+    return Bytes.alloc(5);
+  }
+
+// Generic hash
+  static public function  crypto_generichash(hash_length : Int, message : String, key : Bytes = null) : Bytes {
+    return Bytes.alloc(5);
+  }
+
+// Public key encryption
+  static public function crypto_box_keypair() : {keyType : String, privateKey : Bytes, publicKey : Bytes} {
+    return {keyType : tmp.keyType, privateKey : Bytes.alloc(0), publicKey : Bytes.alloc(0)};
+  }
+
+  static public function crypto_box_seal(message : Bytes, recipient_pk : Bytes) : Bytes {
+    return Bytes.alloc(0);
+  }
+
+  static public function crypto_box_seal_open(cipher : Bytes, my_pk : Bytes, my_sk : Bytes) : Bytes {
+    return Bytes.alloc(0);
+  }
+
+//Random bytes
+  static public function randombytes_buf(length : Int) : Bytes {
+    return Bytes.alloc(0);
+  }
+
+  static public function crypto_pwhash_zero_salt(password :String, keyLength : Int) : Bytes {
+    return Bytes.alloc(0);
+  }
+
+// Encrypt/decrypt with secretkey WITHOUT nonce
+  static public function crypto_secretbox_easy_no_nonce(message : Bytes, key : Bytes) {
+    return Bytes.alloc(0);
+  }
+  static public function crypto_secretbox_open_easy_no_nonce(cipher : Bytes, key : Bytes) : Bytes {
+    return Bytes.alloc(0);
+  }
+}
+#end
