@@ -11,12 +11,7 @@ import haxe.io.Bytes;
 */
 class SodiumTest
 {
-
-    public function __init__() {
-      haxe.macro.Compiler.includeFile('../sodium.min.js');
-    }
-
-	public function new() 
+	public function new()
 	{
 		
 	}
