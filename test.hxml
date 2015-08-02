@@ -52,7 +52,7 @@
 -cp src
 
 -cp test
-#-D HXCPP_M64
+-D HXCPP_M64
 -cpp test_build/cpp_test
 
 
