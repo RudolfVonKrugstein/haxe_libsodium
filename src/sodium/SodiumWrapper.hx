@@ -100,7 +100,7 @@ private extern class Sodium {
   @:native("crypto_box_MACBYTES")
   static public var crypto_box_MACBYTES : Int;
   @:native("crypto_box_SEALBYTES")
-static public var crypto_box_SEALBYTES : Int;
+  static public var crypto_box_SEALBYTES : Int;
 
   @:native("crypto_secretbox_easy")
   static public function crypto_secretbox_easy(out : UnsignedCharStar, message : UnsignedConstCharStar, message_len : Int, nonce : UnsignedConstCharStar, key : UnsignedConstCharStar) : Int;
@@ -111,14 +111,17 @@ static public var crypto_box_SEALBYTES : Int;
 
 class SodiumWrapper {
 
+  static public var secretbox_KEYBYTES = Sodium.crypto_secretbox_KEYBYTES;
+  static public var pwhash_SALTBYTES = Sodium.crypto_pwhash_scryptsalsa208sha256_SALTBYTES;
+
   static public function init() : Int {
-  #if js
-  return 0;
-  #end
-  #if cpp
-  return Sodium.sodium_init();
-  #end
-}
+    #if js
+    return 0;
+    #end
+    #if cpp
+    return Sodium.sodium_init();
+    #end
+  }
 
   /** Convinience wrapper functions*/
   #if cpp
@@ -239,7 +242,10 @@ class SodiumWrapper {
     #end
     #if cpp
     var res = Bytes.alloc(message.length);
-    Sodium.crypto_secretbox_easy(toUnsignedCharStar(res), toUnsignedConstCharStar(message), message.length, toUnsignedConstCharStar(nonce), toUnsignedConstCharStar(key));
+    var worked = Sodium.crypto_secretbox_easy(toUnsignedCharStar(res), toUnsignedConstCharStar(message), message.length, toUnsignedConstCharStar(nonce), toUnsignedConstCharStar(key));
+    if (worked != 0) {
+      return null;
+    }
     return res;
     #end
   }
@@ -249,7 +255,10 @@ class SodiumWrapper {
     #end
     #if cpp
     var res = Bytes.alloc(cipher.length);
-    Sodium.crypto_secretbox_open_easy(toUnsignedCharStar(res), toUnsignedConstCharStar(cipher), cipher.length, toUnsignedConstCharStar(nonce), toUnsignedConstCharStar(key));
+    var worked = Sodium.crypto_secretbox_open_easy(toUnsignedCharStar(res), toUnsignedConstCharStar(cipher), cipher.length, toUnsignedConstCharStar(nonce), toUnsignedConstCharStar(key));
+    if (worked != 0) {
+      return null;
+    }
     return res;
     #end
   }
@@ -264,5 +273,9 @@ class SodiumWrapper {
     var nonce = Bytes.alloc(Sodium.crypto_secretbox_NONCEBYTES);
     nonce.fill(0,nonce.length,0);
     return secretbox_open_easy(cipher,nonce,key);
+  }
+
+  static public function make_secretbox_key(password : String) : Bytes {
+    return pwhash_zero_salt(password, Sodium.crypto_secretbox_KEYBYTES);
   }
 }
