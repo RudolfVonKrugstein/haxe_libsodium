@@ -91,6 +91,8 @@ private extern class Sodium {
   static public var crypto_secretbox_NONCEBYTES : Int;
   @:native("crypto_secretbox_KEYBYTES")
   static public var crypto_secretbox_KEYBYTES : Int;
+  @:native("crypto_secretbox_MACBYTES")
+  static public var crypto_secretbox_MACBYTES : Int;
   @:native("crypto_pwhash_scryptsalsa208sha256_SALTBYTES")
   static public var crypto_pwhash_scryptsalsa208sha256_SALTBYTES : Int;
   @:native("crypto_box_SECRETKEYBYTES")
@@ -241,7 +243,7 @@ class SodiumWrapper {
     return Bytes.ofData(Sodium.crypto_secretbox_easy(new Uint8Array(message.getData()), new Uint8Array(nonce.getData()), new Uint8Array(key.getData())).buffer);
     #end
     #if cpp
-    var res = Bytes.alloc(message.length);
+    var res = Bytes.alloc(message.length + Sodium.crypto_secretbox_MACBYTES);
     var worked = Sodium.crypto_secretbox_easy(toUnsignedCharStar(res), toUnsignedConstCharStar(message), message.length, toUnsignedConstCharStar(nonce), toUnsignedConstCharStar(key));
     if (worked != 0) {
       return null;
@@ -254,7 +256,7 @@ class SodiumWrapper {
     return Bytes.ofData(Sodium.crypto_secretbox_open_easy(new Uint8Array(cipher.getData()), new Uint8Array(nonce.getData()), new Uint8Array(key.getData())).buffer);
     #end
     #if cpp
-    var res = Bytes.alloc(cipher.length);
+    var res = Bytes.alloc(cipher.length - Sodium.crypto_secretbox_MACBYTES);
     var worked = Sodium.crypto_secretbox_open_easy(toUnsignedCharStar(res), toUnsignedConstCharStar(cipher), cipher.length, toUnsignedConstCharStar(nonce), toUnsignedConstCharStar(key));
     if (worked != 0) {
       return null;
