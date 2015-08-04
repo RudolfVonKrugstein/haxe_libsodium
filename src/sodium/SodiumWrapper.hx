@@ -23,15 +23,21 @@ private extern class Sodium {
   static public function crypto_box_seal_open(cipher : Uint8Array, my_pk : Uint8Array, my_sk : Uint8Array, outputFormat : String = 'uint8array') : Uint8Array;
 
   // Secret key encryption
-  static public var crypto_secretbox_NONCEBYTES : Int;
-  static public var crypto_secretbox_KEYBYTES : Int;
-  static public var crypto_pwhash_scryptsalsa208sha256_SALTBYTES : Int;
   static public function crypto_secretbox_easy(message : Uint8Array, nonce : Uint8Array, key : Uint8Array, outputFormat : String = 'uint8array') : Uint8Array;
   static public function crypto_secretbox_open_easy(cipher : Uint8Array, nonce : Uint8Array, key : Uint8Array, outputFormat : String = 'uint8array') : Uint8Array;
 
   //helper functions
   static public function from_base64(str : String) : Uint8Array;
   static public function to_base64(a : Uint8Array) : String;
+
+  // Constants
+  static public var crypto_secretbox_NONCEBYTES : Int;
+  static public var crypto_secretbox_KEYBYTES : Int;
+  static public var crypto_secretbox_MACBYTES : Int;
+  static public var crypto_pwhash_scryptsalsa208sha256_SALTBYTES : Int;
+  static public var crypto_box_SECRETKEYBYTES : Int;
+  static public var crypto_box_PUBLICKEYBYTES : Int;
+  static public var crypto_box_SEALBYTES : Int;
 }
 #end
 #if cpp
@@ -115,6 +121,11 @@ class SodiumWrapper {
 
   static public var secretbox_KEYBYTES = Sodium.crypto_secretbox_KEYBYTES;
   static public var pwhash_SALTBYTES = Sodium.crypto_pwhash_scryptsalsa208sha256_SALTBYTES;
+  static public var secretbox_NONCEBYTES = Sodium.crypto_secretbox_NONCEBYTES;
+  static public var secretbox_MACBYTES = Sodium.crypto_secretbox_MACBYTES;
+  static public var box_SECRETKEYBYTES = Sodium.crypto_box_SECRETKEYBYTES;
+  static public var box_PUBLICKEYBYTES = Sodium.crypto_box_PUBLICKEYBYTES;
+  static public var box_SEALBYTES = Sodium.crypto_box_SEALBYTES;
 
   static public function init() : Int {
     #if js
@@ -178,20 +189,20 @@ class SodiumWrapper {
   }
 
   // Public key encryption
-  static public function box_keypair() : {privateKey : Bytes, publicKey : Bytes} {
+  static public function box_keypair() : {secretKey : SecretKey, publicKey : PublicKey} {
     #if js
     var tmp = Sodium.crypto_box_keypair();
-    return {privateKey : Bytes.ofData(tmp.privateKey.buffer), publicKey : Bytes.ofData(tmp.publicKey.buffer)};
+    return {secretKey : SecretKey.fromBytes(Bytes.ofData(tmp.privateKey.buffer)), publicKey : PublicKey.fromBytes(Bytes.ofData(tmp.publicKey.buffer))};
     #end
     #if cpp
-    var privateKey = Bytes.alloc(Sodium.crypto_box_SECRETKEYBYTES);
-    var publicKey = Bytes.alloc(Sodium.crypto_box_PUBLICKEYBYTES);
-    Sodium.crypto_box_keypair(toUnsignedCharStar(publicKey), toUnsignedCharStar(privateKey));
-    return {privateKey : privateKey, publicKey : publicKey};
+    var privateKey = SecretKey.createEmpty();
+    var publicKey = PublicKey.createEmpty();
+    Sodium.crypto_box_keypair(toUnsignedCharStar(cast publicKey), toUnsignedCharStar(cast privateKey));
+    return {secretKey : privateKey, publicKey : publicKey};
     #end
   }
 
-  static public function box_seal(message : Bytes, recipient_pk : Bytes) : Bytes {
+  static public function box_seal(message : Bytes, recipient_pk : PublicKey) : Bytes {
     #if js
     return Bytes.ofData(Sodium.crypto_box_seal(new Uint8Array(message.getData()),new Uint8Array(recipient_pk.getData())).buffer);
     #end
@@ -205,7 +216,7 @@ class SodiumWrapper {
     #end
   }
 
-  static public function box_seal_open(cipher : Bytes, my_pk : Bytes, my_sk : Bytes) : Bytes {
+  static public function box_seal_open(cipher : Bytes, my_pk : PublicKey, my_sk : SecretKey) : Bytes {
     #if js
     return Bytes.ofData(Sodium.crypto_box_seal_open(new Uint8Array(cipher.getData()), new Uint8Array(my_pk.getData()), new Uint8Array(my_sk.getData())).buffer);
     #end
@@ -238,20 +249,20 @@ class SodiumWrapper {
   }
 
   // Encrypt/decrypt with secretkey
-  static public function secretbox_easy(message : Bytes, nonce : Bytes, key : Bytes) {
+  static public function secretbox_easy(message : Bytes, nonce : Bytes, key : SymmetricKey) {
     #if js
     return Bytes.ofData(Sodium.crypto_secretbox_easy(new Uint8Array(message.getData()), new Uint8Array(nonce.getData()), new Uint8Array(key.getData())).buffer);
     #end
     #if cpp
     var res = Bytes.alloc(message.length + Sodium.crypto_secretbox_MACBYTES);
-    var worked = Sodium.crypto_secretbox_easy(toUnsignedCharStar(res), toUnsignedConstCharStar(message), message.length, toUnsignedConstCharStar(nonce), toUnsignedConstCharStar(key));
+    var worked = Sodium.crypto_secretbox_easy(toUnsignedCharStar(res), toUnsignedConstCharStar(message), message.length, toUnsignedConstCharStar(nonce), toUnsignedConstCharStar(cast key));
     if (worked != 0) {
       return null;
     }
     return res;
     #end
   }
-  static public function secretbox_open_easy(cipher : Bytes, nonce : Bytes, key : Bytes) : Bytes {
+  static public function secretbox_open_easy(cipher : Bytes, nonce : Bytes, key : SymmetricKey) : Bytes {
     #if js
     return Bytes.ofData(Sodium.crypto_secretbox_open_easy(new Uint8Array(cipher.getData()), new Uint8Array(nonce.getData()), new Uint8Array(key.getData())).buffer);
     #end
@@ -266,12 +277,12 @@ class SodiumWrapper {
   }
 
   // Encrypt/decrypt with secretkey WITHOUT nonce
-  static public function secretbox_easy_no_nonce(message : Bytes, key : Bytes) {
+  static public function secretbox_easy_no_nonce(message : Bytes, key : SymmetricKey) {
     var nonce = Bytes.alloc(Sodium.crypto_secretbox_NONCEBYTES);
     nonce.fill(0,nonce.length,0);
     return secretbox_easy(message,nonce,key);
   }
-  static public function secretbox_open_easy_no_nonce(cipher : Bytes, key : Bytes) : Bytes {
+  static public function secretbox_open_easy_no_nonce(cipher : Bytes, key : SymmetricKey) : Bytes {
     var nonce = Bytes.alloc(Sodium.crypto_secretbox_NONCEBYTES);
     nonce.fill(0,nonce.length,0);
     return secretbox_open_easy(cipher,nonce,key);

@@ -60,7 +60,7 @@ class SodiumTest
     public function testCryptoBox():Void {
       var keys = SodiumWrapper.box_keypair();
       var publicKey = keys.publicKey;
-      var privateKey = keys.privateKey;
+      var privateKey = keys.secretKey;
       var message = "Hello, World";
       var encrypted = SodiumWrapper.box_seal(Bytes.ofString(message), publicKey);
       if (encrypted == null) {
