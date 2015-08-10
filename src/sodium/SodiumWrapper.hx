@@ -44,10 +44,10 @@ private extern class Sodium {
 typedef UnsignedConstCharStar = cpp.RawConstPointer<haxe.io.BytesData.Unsigned_char__>;
 typedef UnsignedCharStar = cpp.RawPointer<haxe.io.BytesData.Unsigned_char__>;
 @:buildXml("
-<target id='haxe'>
+<target id='haxe' unless='static_link'>
 <lib name='-lsodium'/>
 </target>
-<target id='__lib__'>
+<target id='__lib__' unless='static_link'>
 <lib name='-lsodium'/>
 </target>
 ")
