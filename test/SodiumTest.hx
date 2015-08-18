@@ -94,6 +94,14 @@ class SodiumTest
 
     }
 	
+	@TestDebug
+    @Test
+    public function testSecretBoxError():Void {
+      var key = SodiumWrapper.randombytes(SodiumWrapper.secretbox_KEYBYTES);
+      var message = "Hello, Secret World";
+      var decrypted = SodiumWrapper.secretbox_open_easy_no_nonce(Bytes.ofString(message), key);
+      Assert.areEqual(decrypted,null);
+    }
 	
 
 }

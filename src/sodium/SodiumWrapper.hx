@@ -217,8 +217,15 @@ class SodiumWrapper {
   }
 
   static public function box_seal_open(cipher : Bytes, my_pk : PublicKey, my_sk : SecretKey) : Bytes {
+    if (cipher.length <= Sodium.crypto_box_SEALBYTES) {
+      return null;
+    }
     #if js
-    return Bytes.ofData(Sodium.crypto_box_seal_open(new Uint8Array(cipher.getData()), new Uint8Array(my_pk.getData()), new Uint8Array(my_sk.getData())).buffer);
+    try {
+      return Bytes.ofData(Sodium.crypto_box_seal_open(new Uint8Array(cipher.getData()), new Uint8Array(my_pk.getData()), new Uint8Array(my_sk.getData())).buffer);
+    } catch(_ : Dynamic) {
+      return null;
+    }
     #end
     #if cpp
     var res = Bytes.alloc(cipher.length - Sodium.crypto_box_SEALBYTES);
@@ -263,8 +270,15 @@ class SodiumWrapper {
     #end
   }
   static public function secretbox_open_easy(cipher : Bytes, nonce : Bytes, key : SymmetricKey) : Bytes {
+    if (cipher.length <= Sodium.crypto_secretbox_MACBYTES) {
+      return null;
+    }
     #if js
-    return Bytes.ofData(Sodium.crypto_secretbox_open_easy(new Uint8Array(cipher.getData()), new Uint8Array(nonce.getData()), new Uint8Array(key.getData())).buffer);
+    try {
+      return Bytes.ofData(Sodium.crypto_secretbox_open_easy(new Uint8Array(cipher.getData()), new Uint8Array(nonce.getData()), new Uint8Array(key.getData())).buffer);
+    } catch(_ : Dynamic) {
+      return null;
+    }
     #end
     #if cpp
     var res = Bytes.alloc(cipher.length - Sodium.crypto_secretbox_MACBYTES);
