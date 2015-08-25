@@ -47,9 +47,15 @@ typedef UnsignedCharStar = cpp.RawPointer<haxe.io.BytesData.Unsigned_char__>;
 <target id='haxe' unless='static_link'>
 <lib name='-lsodium'/>
 </target>
+<files id='haxe'>
+<compilerflag value='-I${haxelib:libsodium}/../dependencies/libsodium-win32/include'/>
+</files>
 <target id='__lib__' unless='static_link'>
 <lib name='-lsodium'/>
 </target>
+<files id='__lib__'>
+<compilerflag value='-I${haxelib:libsodium}/../dependencies/libsodium-win32/include'/>
+</files>
 ")
 /*@:buildXml("
 <files id='haxe'>
