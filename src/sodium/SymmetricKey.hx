@@ -22,7 +22,7 @@ abstract SymmetricKey(Bytes) to Bytes {
     return new SymmetricKey(b);
   }
 
-  @:from static public inline function fromBase64(b64 : String) : PublicKey {
+  @:from static public inline function fromBase64(b64 : String) : SymmetricKey {
     return fromBytes(Base64.decode(b64));
   }
 
