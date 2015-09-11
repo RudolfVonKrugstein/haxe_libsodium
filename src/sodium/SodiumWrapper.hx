@@ -50,6 +50,7 @@ typedef UnsignedCharStar = cpp.RawPointer<haxe.io.BytesData.Unsigned_char__>;
 <files id='haxe'>
 <compilerflag value='-I${haxelib:libsodium}/../dependencies/libsodium-win32/include' if='windows'/>
 <compilerflag value='-I${haxelib:libsodium}/../dependencies/libsodium-android-armv7-a/include' if='android'/>
+<compilerflag value='-I${haxelib:libsodium}/../dependencies/libsodium-ios/include' if='ios'/>
 </files>
 <target id='__lib__' unless='static_link'>
 <lib name='-lsodium'/>
@@ -57,6 +58,7 @@ typedef UnsignedCharStar = cpp.RawPointer<haxe.io.BytesData.Unsigned_char__>;
 <files id='__lib__'>
 <compilerflag value='-I${haxelib:libsodium}/../dependencies/libsodium-win32/include' if='windows'/>
 <compilerflag value='-I${haxelib:libsodium}/../dependencies/libsodium-android-armv7-a/include' if='android'/>
+<compilerflag value='-I${haxelib:libsodium}/../dependencies/libsodium-ios/include' if='ios'/>
 </files>
 ")
 /*@:buildXml("
