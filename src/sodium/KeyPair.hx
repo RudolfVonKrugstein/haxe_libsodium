@@ -26,9 +26,10 @@ class KeyPair {
     var secretKeyBytes = Bytes.alloc(SodiumWrapper.box_SECRETKEYBYTES);
     var publicKeyBytes = Bytes.alloc(SodiumWrapper.box_PUBLICKEYBYTES);
     secretKeyBytes.blit(0,b,0,SodiumWrapper.box_SECRETKEYBYTES);
-    publicKeyBytes.blit(0,b,SodiumWrapper.box_SECRETKEYBYTES, SodiumWrapper.box_SECRETKEYBYTES + SodiumWrapper.box_PUBLICKEYBYTES);
+    publicKeyBytes.blit(0,b,SodiumWrapper.box_SECRETKEYBYTES, SodiumWrapper.box_PUBLICKEYBYTES);
 
-    return new KeyPair(secretKeyBytes, publicKeyBytes);
+    var res = new KeyPair(secretKeyBytes, publicKeyBytes);
+    return res;
   }
 
   @:from static public inline function fromBase64(b64 : String) : KeyPair {

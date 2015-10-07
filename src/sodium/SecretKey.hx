@@ -1,5 +1,6 @@
 package sodium;
 
+import haxe.crypto.Base64;
 import haxe.io.BytesData;
 import haxe.io.Bytes;
 import sodium.SodiumWrapper;
@@ -19,6 +20,14 @@ abstract SecretKey(Bytes) to Bytes {
       return null;
     }
     return new SecretKey(b);
+  }
+
+   @:from static public inline function fromBase64(b64 : String) : PublicKey {
+    return fromBytes(Base64.decode(b64));
+  }
+
+  public function toBase64() : String {
+    return Base64.encode(this);
   }
 
   private function getData() : BytesData {
