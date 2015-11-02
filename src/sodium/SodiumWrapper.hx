@@ -50,6 +50,7 @@ typedef UnsignedCharStar = cpp.RawPointer<haxe.io.BytesData.Unsigned_char__>;
 <files id='haxe'>
 <compilerflag value='-I${haxelib:libsodium}/../dependencies/libsodium-win32/include' if='windows'/>
 <compilerflag value='-I${haxelib:libsodium}/../dependencies/libsodium-android-armv7-a/include' if='android'/>
+<compilerflag value='-I${haxelib:libsodium}/../dependencies/libsodium-ios/include' if='ios'/>
 </files>
 <target id='__lib__' unless='static_link'>
 <lib name='-lsodium'/>
@@ -57,6 +58,7 @@ typedef UnsignedCharStar = cpp.RawPointer<haxe.io.BytesData.Unsigned_char__>;
 <files id='__lib__'>
 <compilerflag value='-I${haxelib:libsodium}/../dependencies/libsodium-win32/include' if='windows'/>
 <compilerflag value='-I${haxelib:libsodium}/../dependencies/libsodium-android-armv7-a/include' if='android'/>
+<compilerflag value='-I${haxelib:libsodium}/../dependencies/libsodium-ios/include' if='ios'/>
 </files>
 ")
 /*@:buildXml("
@@ -197,16 +199,16 @@ class SodiumWrapper {
   }
 
   // Public key encryption
-  static public function box_keypair() : {secretKey : SecretKey, publicKey : PublicKey} {
+  static public function box_keypair() : KeyPair {
     #if js
     var tmp = Sodium.crypto_box_keypair();
-    return {secretKey : SecretKey.fromBytes(Bytes.ofData(tmp.privateKey.buffer)), publicKey : PublicKey.fromBytes(Bytes.ofData(tmp.publicKey.buffer))};
+    return new KeyPair(SecretKey.fromBytes(Bytes.ofData(tmp.privateKey.buffer)), PublicKey.fromBytes(Bytes.ofData(tmp.publicKey.buffer)));
     #end
     #if cpp
     var privateKey = SecretKey.createEmpty();
     var publicKey = PublicKey.createEmpty();
     Sodium.crypto_box_keypair(toUnsignedCharStar(cast publicKey), toUnsignedCharStar(cast privateKey));
-    return {secretKey : privateKey, publicKey : publicKey};
+    return new KeyPair(privateKey, publicKey);
     #end
   }
 
